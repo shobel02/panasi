@@ -1229,6 +1229,7 @@ class PanasiApp {
         const duration = parseInt(this.elements.durationInput.value);
         
         console.log('入力値:', { breadName, processName, duration });
+        console.log('timersContainer要素:', this.elements.timersContainer);
 
         if (!breadName || !processName || !duration || duration <= 0) {
             console.log('バリデーションエラー');
@@ -1254,14 +1255,51 @@ class PanasiApp {
         console.log('Timer作成完了:', timer);
         this.timers.set(timer.id, timer);
         console.log('timersMapに追加:', this.timers.size);
+        console.log('renderTimer呼び出し前');
         this.renderTimer(timer);
+        console.log('renderTimer呼び出し後');
         this.updateTimersDisplay();
+        console.log('updateTimersDisplay呼び出し後');
         
         // フォームをリセット
         this.elements.timerForm.reset();
         
         this.saveToStorage();
         console.log('createTimer 完了');
+    }
+
+    // デバッグ用：強制的にテスト用タイマーを作成
+    createTestTimer() {
+        console.log('テスト用タイマー作成開始');
+        console.log('timersContainer:', this.elements.timersContainer);
+        
+        if (!this.elements.timersContainer) {
+            console.error('ERROR: timersContainer要素が見つかりません');
+            return;
+        }
+        
+        const timer = new Timer(
+            this.timerIdCounter++,
+            'テスト食パン',
+            'テスト発酵',
+            1, // 1分
+            () => this.onTimerComplete(timer)
+        );
+        
+        console.log('テストTimer作成:', timer);
+        this.timers.set(timer.id, timer);
+        console.log('現在のtimers Map:', this.timers);
+        
+        // 直接HTML要素を作成して確認
+        const testElement = document.createElement('div');
+        testElement.style.cssText = 'background: red; color: white; padding: 10px; margin: 10px; border-radius: 5px;';
+        testElement.textContent = 'TEST TIMER ELEMENT';
+        this.elements.timersContainer.appendChild(testElement);
+        
+        this.renderTimer(timer);
+        this.updateTimersDisplay();
+        
+        console.log('テスト用タイマー作成完了');
     }
 
     // タイマーの描画

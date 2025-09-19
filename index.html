@@ -148,6 +148,11 @@
             <button onclick="panasiApp.testVoiceCommand('すべて止めて')" style="margin: 1px; padding: 4px 8px; font-size: 10px; border: none; border-radius: 3px; cursor: pointer; background: #ffc107; color: black;">すべて止めて</button><br>
             <button onclick="panasiApp.testVoiceCommand('みんなストップ')" style="margin: 1px; padding: 4px 8px; font-size: 10px; border: none; border-radius: 3px; cursor: pointer; background: #ffc107; color: black;">みんなストップ</button>
             <button onclick="panasiApp.testVoiceCommand('オール停止')" style="margin: 1px; padding: 4px 8px; font-size: 10px; border: none; border-radius: 3px; cursor: pointer; background: #ffc107; color: black;">オール停止</button><br>
+        </div>
+        <div style="margin: 10px 0; border-top: 1px solid #444; padding-top: 10px;">
+            <p style="margin: 0 0 5px 0; color: #ff6b6b; font-size: 10px;">🔧 デバッグ用</p>
+            <button onclick="panasiApp.createTestTimer()" style="margin: 1px; padding: 4px 8px; font-size: 10px; border: none; border-radius: 3px; cursor: pointer; background: #ff6b6b; color: white;">テスト用タイマー作成</button>
+            <button onclick="console.log('timers:', panasiApp.timers); console.log('container:', panasiApp.elements.timersContainer);" style="margin: 1px; padding: 4px 8px; font-size: 10px; border: none; border-radius: 3px; cursor: pointer; background: #17a2b8; color: white;">状態確認</button><br>
             <p style="margin: 5px 0 5px 0; color: #dc3545; font-size: 10px;">🗑️ 隠しコマンド（終了）</p>
             <button onclick="panasiApp.testVoiceCommand('タイマーすべて終了')" style="margin: 1px; padding: 4px 8px; font-size: 10px; border: none; border-radius: 3px; cursor: pointer; background: #dc3545; color: white;">すべて終了</button>
             <button onclick="panasiApp.testVoiceCommand('すべてクリア')" style="margin: 1px; padding: 4px 8px; font-size: 10px; border: none; border-radius: 3px; cursor: pointer; background: #dc3545; color: white;">すべてクリア</button><br>
