@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panasi - パン作りタイマー</title>
+    
+    <!-- PWA対応 -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#D2691E">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Panasi">
+    <link rel="icon" type="image/svg+xml" href="icon-source.svg">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="styles.css">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="app">
+        <header class="header">
+            <div class="header-content">
+                <div class="header-main">
+                    <h1><i class="fas fa-bread-slice"></i> Panasi</h1>
+                    <p>パン作りタイマー</p>
+                </div>
+                <div class="header-voice">
+                    <button id="install-btn" class="btn-install" style="display: none;">
+                        <i class="fas fa-download"></i>
+                        <span>アプリ化</span>
+                    </button>
+                    <button id="voice-btn" class="btn-voice-embedded">
+                        <i class="fas fa-microphone"></i>
+                    </button>
+                    <div id="voice-realtime" class="voice-realtime-embedded"></div>
+                </div>
+            </div>
+            <div id="voice-feedback" class="voice-feedback-header"></div>
+        </header>
+
+        <main class="main">
+            <!-- アクティブタイマー一覧（メイン表示） -->
+            <section class="timers-section-main">
+                <div class="timers-header">
+                    <h2><i class="fas fa-clock"></i> アクティブタイマー</h2>
+                    <button id="manual-add-btn" class="btn btn-secondary btn-sm">
+                        <i class="fas fa-plus"></i> 手動追加
+                    </button>
+                </div>
+                <div id="timers-container" class="timers-grid">
+                    <div class="no-timers">
+                        <i class="fas fa-bread-slice"></i>
+                        <p>音声でタイマーを作成してください</p>
+                        <small>例：「食パン一次発酵40分スタート」</small>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 手動タイマー作成フォーム（折りたたみ） -->
+            <section class="timer-form-section" id="manual-form-section" style="display: none;">
+                <div class="form-container">
+                    <div class="form-header">
+                        <h3>手動でタイマーを作成</h3>
+                        <button id="close-form-btn" class="btn btn-text">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <form id="timer-form" class="timer-form-compact">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="bread-name">パン名</label>
+                                <input type="text" id="bread-name" placeholder="食パン" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="process-name">工程名</label>
+                                <input type="text" id="process-name" placeholder="一次発酵" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="duration">時間（分）</label>
+                                <input type="number" id="duration" min="1" max="999" placeholder="40" required>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-full">
+                            <i class="fas fa-play"></i> タイマー開始
+                        </button>
+                    </form>
+                </div>
+            </section>
+        </main>
+
+        <!-- 設定・情報パネル -->
+        <aside class="settings-panel" id="settings-panel">
+            <div class="panel-content">
+                <h3>設定</h3>
+                <div class="setting-group">
+                    <label>
+                        <input type="checkbox" id="sound-enabled" checked>
+                        完了時の音声通知
+                    </label>
+                </div>
+                <div class="setting-group">
+                    <label>
+                        <input type="checkbox" id="vibration-enabled" checked>
+                        バイブレーション
+                    </label>
+                </div>
+                <div class="setting-group">
+                    <button id="clear-all-btn" class="btn btn-danger">
+                        <i class="fas fa-trash"></i> 全タイマー削除
+                    </button>
+                </div>
+                <div class="setting-group">
+                    <button onclick="document.getElementById('debug-panel').style.display='block'" class="btn btn-secondary" style="font-size: 12px;">
+                        <i class="fas fa-bug"></i> デバッグテスト
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- フローティング設定ボタン -->
+        <button id="settings-toggle" class="settings-toggle">
+            <i class="fas fa-cog"></i>
+        </button>
+    </div>
+
+    <!-- 通知音用オーディオ -->
+    <audio id="notification-sound" preload="auto">
+        <source src="notification.mp3" type="audio/mpeg">
+        <source src="notification.ogg" type="audio/ogg">
+    </audio>
+
+    <!-- デバッグパネル（開発用） -->
+    <div id="debug-panel" style="position: fixed; bottom: 80px; right: 20px; background: rgba(0,0,0,0.9); color: white; padding: 15px; border-radius: 8px; font-size: 12px; z-index: 1001; display: none; max-width: 300px;">
+        <h4 style="margin: 0 0 10px 0; color: #90ee90;">🔧 デバッグテスト</h4>
+        <button onclick="panasiApp.testVoiceCommand('食パン一次発酵40分')" style="margin: 2px; padding: 6px 10px; font-size: 11px; border: none; border-radius: 4px; cursor: pointer; background: #007bff; color: white;">食パン一次発酵40分</button><br>
+        <button onclick="panasiApp.testVoiceCommand('メロンパン 2次発酵 20分 スタート')" style="margin: 2px; padding: 6px 10px; font-size: 11px; border: none; border-radius: 4px; cursor: pointer; background: #28a745; color: white;">メロンパン 2次発酵 20分 スタート</button><br>
+        <button onclick="panasiApp.testVoiceCommand('食パン2次発酵30分')" style="margin: 2px; padding: 6px 10px; font-size: 11px; border: none; border-radius: 4px; cursor: pointer; background: #dc3545; color: white;">食パン2次発酵30分</button><br>
+        <button onclick="panasiApp.testVoiceCommand('食パン1次発酵25分')" style="margin: 2px; padding: 6px 10px; font-size: 11px; border: None; border-radius: 4px; cursor: pointer; background: #dc3545; color: white;">食パン1次発酵25分</button><br>
+        <button onclick="panasiApp.testVoiceCommand('クロワッサン成形30分')" style="margin: 2px; padding: 6px 10px; font-size: 11px; border: none; border-radius: 4px; cursor: pointer; background: #007bff; color: white;">クロワッサン成形30分</button><br>
+        <button onclick="panasiApp.testVoiceCommand('バゲット焼成15分スタート')" style="margin: 2px; padding: 6px 10px; font-size: 11px; border: none; border-radius: 4px; cursor: pointer; background: #007bff; color: white;">バゲット焼成15分スタート</button><br>
+        <div style="margin: 10px 0; border-top: 1px solid #444; padding-top: 10px;">
+            <p style="margin: 0 0 5px 0; color: #ffc107; font-size: 10px;">🎯 隠しコマンド（停止）</p>
+            <button onclick="panasiApp.testVoiceCommand('タイマーすべて停止')" style="margin: 1px; padding: 4px 8px; font-size: 10px; border: none; border-radius: 3px; cursor: pointer; background: #ffc107; color: black;">すべて停止</button>
+            <button onclick="panasiApp.testVoiceCommand('すべて止めて')" style="margin: 1px; padding: 4px 8px; font-size: 10px; border: none; border-radius: 3px; cursor: pointer; background: #ffc107; color: black;">すべて止めて</button><br>
+            <button onclick="panasiApp.testVoiceCommand('みんなストップ')" style="margin: 1px; padding: 4px 8px; font-size: 10px; border: none; border-radius: 3px; cursor: pointer; background: #ffc107; color: black;">みんなストップ</button>
+            <button onclick="panasiApp.testVoiceCommand('オール停止')" style="margin: 1px; padding: 4px 8px; font-size: 10px; border: none; border-radius: 3px; cursor: pointer; background: #ffc107; color: black;">オール停止</button><br>
+            <p style="margin: 5px 0 5px 0; color: #dc3545; font-size: 10px;">🗑️ 隠しコマンド（終了）</p>
+            <button onclick="panasiApp.testVoiceCommand('タイマーすべて終了')" style="margin: 1px; padding: 4px 8px; font-size: 10px; border: none; border-radius: 3px; cursor: pointer; background: #dc3545; color: white;">すべて終了</button>
+            <button onclick="panasiApp.testVoiceCommand('すべてクリア')" style="margin: 1px; padding: 4px 8px; font-size: 10px; border: none; border-radius: 3px; cursor: pointer; background: #dc3545; color: white;">すべてクリア</button><br>
+            <button onclick="panasiApp.testVoiceCommand('みんな削除')" style="margin: 1px; padding: 4px 8px; font-size: 10px; border: none; border-radius: 3px; cursor: pointer; background: #dc3545; color: white;">みんな削除</button>
+            <button onclick="panasiApp.testVoiceCommand('オール終了')" style="margin: 1px; padding: 4px 8px; font-size: 10px; border: none; border-radius: 3px; cursor: pointer; background: #dc3545; color: white;">オール終了</button><br>
+            <p style="margin: 5px 0 5px 0; color: #17a2b8; font-size: 10px;">📤 タイマー移動</p>
+            <button onclick="panasiApp.testVoiceCommand('食パンを上に')" style="margin: 1px; padding: 4px 8px; font-size: 10px; border: none; border-radius: 3px; cursor: pointer; background: #17a2b8; color: white;">食パンを上に</button>
+            <button onclick="panasiApp.testVoiceCommand('メロンパン見たい')" style="margin: 1px; padding: 4px 8px; font-size: 10px; border: none; border-radius: 3px; cursor: pointer; background: #17a2b8; color: white;">メロンパン見たい</button><br>
+            <button onclick="panasiApp.testVoiceCommand('クロワッサン優先')" style="margin: 1px; padding: 4px 8px; font-size: 10px; border: none; border-radius: 3px; cursor: pointer; background: #17a2b8; color: white;">クロワッサン優先</button>
+            <button onclick="panasiApp.testVoiceCommand('バゲット移動')" style="margin: 1px; padding: 4px 8px; font-size: 10px; border: none; border-radius: 3px; cursor: pointer; background: #17a2b8; color: white;">バゲット移動</button><br>
+            <p style="margin: 5px 0 5px 0; color: #6f42c1; font-size: 10px;">🗣️ 残り時間問い合わせ</p>
+            <button onclick="panasiApp.testVoiceCommand('残り時間は？')" style="margin: 1px; padding: 4px 8px; font-size: 10px; border: none; border-radius: 3px; cursor: pointer; background: #6f42c1; color: white;">残り時間は？</button>
+            <button onclick="panasiApp.testVoiceCommand('あとどれくらい？')" style="margin: 1px; padding: 4px 8px; font-size: 10px; border: none; border-radius: 3px; cursor: pointer; background: #6f42c1; color: white;">あとどれくらい？</button><br>
+            <button onclick="panasiApp.testVoiceCommand('食パンの残り時間')" style="margin: 1px; padding: 4px 8px; font-size: 10px; border: none; border-radius: 3px; cursor: pointer; background: #6f42c1; color: white;">食パンの残り時間</button>
+            <button onclick="panasiApp.testVoiceCommand('進捗状況は？')" style="margin: 1px; padding: 4px 8px; font-size: 10px; border: none; border-radius: 3px; cursor: pointer; background: #6f42c1; color: white;">進捗状況は？</button><br>
+        </div>
+        <button onclick="document.getElementById('debug-panel').style.display='none'" style="margin: 10px 2px 2px 2px; padding: 4px 8px; font-size: 10px; border: none; border-radius: 4px; cursor: pointer; background: #6c757d; color: white;">閉じる</button>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        // 音声パネルの切り替え
+        function toggleVoicePanel() {
+            const panel = document.getElementById('voice-panel');
+            const toggle = document.getElementById('voice-toggle');
+            const icon = toggle.querySelector('i');
+            
+            panel.classList.toggle('collapsed');
+            
+            if (panel.classList.contains('collapsed')) {
+                icon.className = 'fas fa-chevron-down';
+            } else {
+                icon.className = 'fas fa-chevron-up';
+            }
+        }
+    </script>
+    <script src="app.js"></script>
+    
+    <!-- PWA Service Worker -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('service-worker.js')
+                    .then(function(registration) {
+                        console.log('ServiceWorker registered: ', registration);
+                    })
+                    .catch(function(registrationError) {
+                        console.log('ServiceWorker registration failed: ', registrationError);
+                    });
+            });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Icon Generator</title>
+</head>
+<body>
+    <canvas id="canvas" width="512" height="512"></canvas>
+    <script>
+        // アイコン生成用のJavaScript（開発時のみ使用）
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        // パン形状のアイコンを描画
+        function generateIcon(size) {
+            const canvas = document.createElement('canvas');
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext('2d');
+            
+            // 背景
+            ctx.fillStyle = '#D2691E';
+            ctx.roundRect(0, 0, size, size, size * 0.15);
+            ctx.fill();
+            
+            // パンの形状
+            const breadWidth = size * 0.2;
+            const breadHeight = size * 0.33;
+            const centerX = size * 0.35;
+            const centerY = size * 0.39;
+            
+            // 左のパン
+            ctx.fillStyle = '#FFF8DC';
+            ctx.beginPath();
+            ctx.ellipse(centerX, centerY, breadWidth, breadHeight, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // 右のパン
+            ctx.beginPath();
+            ctx.ellipse(centerX + size * 0.3, centerY, breadWidth, breadHeight, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // パンの上部装飾
+            ctx.fillStyle = '#8B4513';
+            ctx.beginPath();
+            ctx.ellipse(centerX, centerY - breadHeight * 0.3, breadWidth * 0.75, breadHeight * 0.25, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.beginPath();
+            ctx.ellipse(centerX + size * 0.3, centerY - breadHeight * 0.3, breadWidth * 0.75, breadHeight * 0.25, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // テキスト（大きいサイズのみ）
+            if (size >= 192) {
+                ctx.fillStyle = 'white';
+                ctx.font = `bold ${size * 0.12}px sans-serif`;
+                ctx.textAlign = 'center';
+                ctx.fillText('Panasi', size / 2, size * 0.88);
+            }
+            
+            return canvas.toDataURL('image/png');
+        }
+        
+        // 各サイズのアイコンを生成してダウンロード
+        const sizes = [72, 96, 128, 144, 152, 192, 384, 512];
+        
+        sizes.forEach(size => {
+            const dataUrl = generateIcon(size);
+            const link = document.createElement('a');
+            link.download = `icon-${size}x${size}.png`;
+            link.href = dataUrl;
+            document.body.appendChild(link);
+        });
+        
+        console.log('アイコンジェネレーターが準備できました。コンソールから手動でダウンロードリンクをクリックしてください。');
+    </script>
+</body>
+</html>
